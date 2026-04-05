@@ -519,11 +519,11 @@ function normalizeApiDate(value){
   return '';
 }
 function getUserIdByName(name){
-  const map={Zemo:'u1',Kole:'u2',Dzole:'u3',Bratko:'u4',Zoran:'u1',Nikola:'u2',Gjorgji:'u3'};
+  const map={Zemo:'u1',Kole:'u2',Dzole:'u3',Bratko:'u4',Zoran:'u5',Nikola:'u6',Gjorgji:'u7'};
   return map[name]||'';
 }
 function getUserNameById(id){
-  const map={u1:'Zemo',u2:'Kole',u3:'Dzole',u4:'Bratko'};
+  const map={u1:'Zemo',u2:'Kole',u3:'Dzole',u4:'Bratko',u5:'Zoran',u6:'Nikola',u7:'Gjorgji'};
   return map[id]||id;
 }
 function getObjectIdByName(name){
@@ -531,7 +531,7 @@ function getObjectIdByName(name){
   return map[name]||'';
 }
 function getVehicleIdByName(name){
-  const map={Vito:'v1',LT35:'v2'};
+  const map={GLISER:'v1',Beneli:'v2',Ducati:'v3',911:'v4'};
   return map[name]||'';
 }
 function getItemId(type,name){

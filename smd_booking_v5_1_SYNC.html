@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>SMD Booking V5.1</title>
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --panel:#ffffff;
+      --line:#d6dde8;
+      --text:#111827;
+      --muted:#6b7280;
+      --accent:#2563eb;
+      --fab:#22c55e;
+      --danger:#dc2626;
+      --shadow:0 8px 24px rgba(15,23,42,.08);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html, body{width:100%;overflow-x:hidden}
+    body{margin:0;position:relative;z-index:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    button,input{font:inherit}
+
+    /* ---------- DESKTOP ---------- */
+    .desktop-app{
+      display:grid;
+      grid-template-columns:260px 1fr 260px;
+      gap:16px;
+      padding:16px;
+      min-height:100vh;
+    }
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:0 4px 18px rgba(0,0,0,.06);
+    }
+    .calendar-panel{display:flex;flex-direction:column;min-width:0}
+    .title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .brand{font-size:24px;font-weight:700}
+    .month-nav{display:flex;align-items:center;gap:10px}
+    .desktop-btn{
+      border:1px solid #cfd8e3;background:#fff;color:#111827;border-radius:10px;padding:10px 14px;cursor:pointer;
+    }
+    .desktop-btn.primary{background:#2563eb;border-color:#2563eb;color:#fff}
+    .desktop-btn.danger{background:#fff0f0;border-color:#fecaca;color:#991b1b}
+    .desktop-btn:disabled{opacity:.45;cursor:not-allowed}
+    .section-title{
+      font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px 0;font-weight:700;
+    }
+    .checklist{display:flex;flex-direction:column;gap:8px}
+    .item{
+      display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;
+      cursor:pointer;transition:.15s ease;
+    }
+    .item:hover{background:#f8fbff}
+    .item.active{border:2px solid #3b82f6;background:#eff6ff}
+    .swatch{width:12px;height:12px;border-radius:999px;flex:0 0 auto;border:1px solid rgba(0,0,0,.12)}
+    .radio-dot{width:12px;height:12px;border-radius:999px;border:1.5px solid #9ca3af;background:#fff;flex:0 0 auto}
+    .entry-box{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:10px}
+    .field-input{
+      width:100%;background:#fff;color:#111827;border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+    }
+    .selection-pill{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid var(--line);
+      background:#fff;font-size:13px;margin-right:8px;margin-bottom:8px;
+    }
+    .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .day-name{color:var(--muted);font-size:12px;text-align:center;padding:6px 0;font-weight:700}
+    .day{
+      height:140px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      padding:8px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .day.muted{opacity:.45;background:#fafafa}
+    .day-num{font-size:13px;color:#374151;font-weight:700;flex:0 0 auto;margin-bottom:6px}
+    .desktop-day-content{
+      flex:1 1 auto;
+      overflow-y:auto;
+      overflow-x:hidden;
+      padding-right:2px;
+    }
+    .desktop-day-content::-webkit-scrollbar{width:6px}
+    .desktop-day-content::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+    .event{
+      font-size:12px;line-height:1.25;padding:6px 7px;border-radius:10px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+      border:1px solid transparent;margin-top:4px;cursor:pointer;
+    }
+    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+    .badge{
+      padding:4px 8px;border-radius:999px;background:#eef2ff;border:1px solid #dbe4ff;font-size:12px;color:#1d4ed8;font-weight:700;
+    }
+    .tiny{font-size:12px;color:var(--muted)}
+
+    .desktop-modal-backdrop,.mobile-confirm-backdrop{
+      position:fixed;inset:0;background:rgba(15,23,42,.35);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;
+    }
+    .desktop-modal-backdrop.open,.mobile-confirm-backdrop.open{display:flex}
+    .desktop-modal,.confirm-card{
+      width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.12);
+    }
+    .confirm-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+    .confirm-title{font-size:18px;font-weight:700;margin-bottom:8px}
+    .confirm-text{font-size:14px;color:#475569;line-height:1.4}
+
+    /* ---------- MOBILE ---------- */
+    .mobile-app{
+      display:none;
+      min-height:100vh;
+      position:relative;
+      padding-bottom:140px;
+      background:var(--bg);
+      width:100%;
+      max-width:100vw;
+      overflow-x:hidden;
+      z-index:1;
+    }
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:rgba(255,255,255,.98);
+      backdrop-filter:blur(8px);
+      border-bottom:1px solid var(--line);
+      padding:22px 24px 20px;
+    }
+    .month-row{
+      display:grid;
+      grid-template-columns:96px 1fr 96px;
+      align-items:center;
+      gap:16px;
+    }
+    .nav-btn{
+      width:96px;
+      height:82px;
+      border:none;
+      border-radius:24px;
+      background:#eef2f7;
+      font-size:40px;
+      font-weight:700;
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 1px 0 rgba(15,23,42,.02) inset;
+    }
+    .month-label{
+      text-align:center;
+      font-size:34px;
+      line-height:1.1;
+      font-weight:800;
+      letter-spacing:-.02em;
+      color:#0f172a;
+    }
+    .weekdays{
+      display:grid;
+      grid-template-columns:repeat(7,minmax(0,1fr));
+      gap:10px;
+      padding:18px 24px 0;
+    }
+    .weekday{
+      text-align:center;
+      font-size:14px;
+      color:#64748b;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+      padding:0 0 2px;
+    }
+    .mobile-calendar{
+      display:grid;
+      grid-template-columns:repeat(7,minmax(0,1fr));
+      gap:10px;
+      padding:12px 24px 26px;
+    }
+    .mobile-day{
+      min-height:230px;
+      background:var(--panel);
+      border:2px solid #d7dfe8;
+      border-radius:24px;
+      padding:8px 6px 6px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .mobile-day.muted{opacity:.45;background:#f1f5f9}
+    .mobile-day-num{
+      font-size:18px;
+      font-weight:800;
+      color:#334155;
+      margin-bottom:8px;
+      padding-left:6px;
+      line-height:1;
+    }
+    .entries{display:flex;flex-direction:column;gap:6px;min-height:0;overflow:hidden}
+    .mobile-entry{
+      border-radius:16px;
+      padding:8px 9px;
+      color:#fff;
+      line-height:1.02;
+      font-size:11px;
+      min-height:54px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);
+      cursor:pointer;
+      overflow:hidden;
+    }
+    .entry-user{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .entry-item{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.97;margin-top:2px}
+    .fab{
+      position:fixed !important;
+      right:max(22px, calc(env(safe-area-inset-right) + 16px));
+      bottom:max(22px, calc(env(safe-area-inset-bottom) + 16px));
+      width:112px;
+      height:112px;
+      border:none;
+      border-radius:50%;
+      background:var(--fab);
+      color:#fff;
+      font-size:68px;
+      line-height:1;
+      box-shadow:0 18px 36px rgba(34,197,94,.28), var(--shadow);
+      z-index:2147483647 !important;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:auto !important;
+      touch-action:manipulation;
+      cursor:pointer;
+    }
+    .sheet{
+      position:fixed;inset:0;background:#fff;display:none;flex-direction:column;z-index:40;
+    }
+    .sheet.active{display:flex}
+    .sheet-header{
+      padding:16px 16px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;
+      position:sticky;top:0;background:#fff;z-index:2;
+    }
+    .sheet-title{font-size:20px;font-weight:700}
+    .close-btn{border:none;background:#eef2f7;color:var(--text);border-radius:12px;padding:10px 12px;font-weight:700}
+    .sheet-body{padding:16px;overflow:auto;display:flex;flex-direction:column;gap:18px}
+    .label{font-size:13px;font-weight:700;color:#334155;margin-bottom:8px;text-transform:uppercase;letter-spacing:.03em}
+    .button-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .button-grid.users{grid-template-columns:repeat(3,1fr)}
+    .select-btn{
+      border:1px solid var(--line);background:#f8fafc;color:var(--text);border-radius:14px;padding:14px 12px;font-size:15px;font-weight:700;
+      text-align:center;min-height:50px;
+    }
+    .select-btn.active{border:2px solid var(--accent);background:#eff6ff}
+    .item-btn{color:#fff;border:none;box-shadow:var(--shadow)}
+    .item-btn.active{outline:3px solid #bfdbfe;border:none;background:inherit}
+    .field{display:flex;flex-direction:column;gap:8px}
+    .helper{font-size:12px;color:var(--muted);margin-top:2px}
+    .summary{
+      border:1px solid var(--line);background:#f8fafc;border-radius:14px;padding:12px;font-size:14px;color:#334155;line-height:1.35;
+    }
+    .summary strong{color:#0f172a}
+    .sheet-footer{margin-top:auto;padding:16px;border-top:1px solid var(--line);background:#fff}
+    .save-btn{
+      width:100%;border:none;border-radius:16px;padding:16px;font-size:16px;font-weight:700;background:#2563eb;color:#fff;opacity:.45;
+    }
+    .save-btn.enabled{opacity:1}
+
+    @media (max-width: 767px){
+      .mobile-app{padding-bottom:120px}
+      .topbar{padding:16px 18px 14px}
+      .month-row{grid-template-columns:64px 1fr 64px;gap:12px}
+      .nav-btn{width:64px;height:64px;border-radius:18px;font-size:30px}
+      .month-label{font-size:26px}
+      .weekdays{gap:8px;padding:14px 18px 0}
+      .weekday{font-size:12px}
+      .mobile-calendar{gap:8px;padding:10px 18px 22px}
+.mobile-day{min-height:160px;border-radius:18px;padding:6px 4px 4px}
+      .mobile-day-num{font-size:16px;margin-bottom:6px;padding-left:4px}
+      .entries{gap:4px}
+      .mobile-entry{min-height:40px;border-radius:12px;padding:6px 6px;font-size:10px}
+      .fab{width:78px;height:78px;right:18px;bottom:18px;font-size:52px}
+    }
+
+    /* day more indicator + day sheet */
+    .more-badge{
+      margin-top:2px;
+      border:none;
+      background:#e2e8f0;
+      color:#334155;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:800;
+      padding:4px 6px;
+      width:100%;
+    }
+    .day-sheet-backdrop{
+      position:fixed;inset:0;background:rgba(15,23,42,.35);display:none;align-items:flex-end;z-index:1200;
+    }
+    .day-sheet-backdrop.open{display:flex}
+    .day-sheet{
+      width:100%;max-height:70vh;background:#fff;border-radius:20px 20px 0 0;border:1px solid var(--line);padding:16px;overflow:auto;
+      box-shadow:0 -10px 30px rgba(0,0,0,.14);
+    }
+    .day-sheet-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .day-sheet-title{font-size:18px;font-weight:800;color:#0f172a}
+    .day-sheet-list{display:flex;flex-direction:column;gap:8px}
+    .day-sheet-entry{border:none;border-radius:14px;padding:12px;color:#fff;text-align:left;font-size:14px;font-weight:700}
+
+    @media (max-width: 420px){
+      .topbar{padding:14px 14px 12px}
+      .month-row{grid-template-columns:56px 1fr 56px;gap:10px}
+      .nav-btn{width:56px;height:56px;border-radius:16px;font-size:28px}
+      .month-label{font-size:22px}
+      .weekdays{gap:6px;padding:12px 10px 0}
+      .weekday{font-size:11px}
+      .mobile-calendar{gap:6px;padding:8px 8px 20px}
+.mobile-day{min-height:112px;border-width:1px;border-radius:14px;padding:4px}
+      .mobile-day-num{font-size:11px;margin-bottom:4px;padding-left:2px}
+      .entries{gap:3px}
+      .mobile-entry{min-height:30px;border-radius:8px;padding:4px 5px;font-size:9px}
+      .fab{width:62px;height:62px;right:16px;bottom:16px;font-size:42px}
+    }
+
+    /* default responsive */
+    @media (max-width: 767px){
+      .desktop-app,.desktop-modal-backdrop{display:none !important}
+      .mobile-app{display:block}
+    }
+    @media (min-width: 768px){
+      .mobile-confirm-backdrop,.sheet{display:none !important}
+    }
+
+    /* force mobile on phones */
+    body.force-mobile .desktop-app,
+    body.force-mobile .desktop-modal-backdrop{display:none !important}
+    body.force-mobile .mobile-app{display:block !important}
+  </style>
+</head>
+<body>
+  <div class="desktop-app">
+    <aside class="panel">
+      <h3 class="section-title">Users</h3>
+      <div class="checklist" id="desktopUsersList"></div>
+      <div class="entry-box">
+        <div class="section-title">Selected</div>
+        <div id="desktopSelectedSummary" class="tiny">Select 1 user and 1 object or vehicle.</div>
+        <label>From</label><input type="date" class="field-input" id="desktopFromDate">
+        <label>To</label><input type="date" class="field-input" id="desktopToDate">
+        <label>Note</label><input type="text" class="field-input" id="desktopNote" placeholder="Optional note">
+        <button class="desktop-btn primary" id="desktopAddBtn" disabled>Add Entry</button>
+      </div>
+    </aside>
+
+    <main class="panel calendar-panel">
+      <div class="title-row">
+        <div class="brand">SMD Booking</div>
+        <div class="month-nav">
+          <button class="desktop-btn" id="desktopPrevMonth">←</button>
+          <div id="desktopMonthLabel" style="min-width:180px;text-align:center;font-weight:700"></div>
+          <button class="desktop-btn" id="desktopNextMonth">→</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <span class="badge">Desktop view</span>
+        <span class="tiny">Tap entry to delete. Days have fixed height with internal scroll.</span>
+      </div>
+      <div class="calendar-grid" id="desktopDayNames"></div>
+      <div class="calendar-grid" id="desktopCalendarGrid"></div>
+    </main>
+
+    <aside class="panel">
+      <h3 class="section-title">Objects</h3>
+      <div class="checklist" id="desktopObjectsList"></div>
+      <div style="height:18px"></div>
+      <h3 class="section-title">Vehicles</h3>
+      <div class="checklist" id="desktopVehiclesList"></div>
+    </aside>
+  </div>
+
+  <div class="desktop-modal-backdrop" id="desktopDeleteModal">
+    <div class="desktop-modal">
+      <div class="confirm-title">Delete entry?</div>
+      <div class="confirm-text" id="desktopDeleteText"></div>
+      <div class="confirm-actions">
+        <button class="desktop-btn" id="desktopDeleteCancel">Cancel</button>
+        <button class="desktop-btn danger" id="desktopDeleteConfirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-app">
+    <div class="topbar">
+      <div class="month-row">
+        <button class="nav-btn" id="mobilePrevMonth">‹</button>
+        <div class="month-label" id="mobileMonthLabel"></div>
+        <button class="nav-btn" id="mobileNextMonth">›</button>
+      </div>
+    </div>
+    <div class="weekdays" id="mobileWeekdays"></div>
+    <div class="mobile-calendar" id="mobileCalendar"></div>
+    <button type="button" class="fab" id="mobileFab" aria-label="Add entry">+</button>
+  </div>
+
+  <div class="sheet" id="mobileEntrySheet">
+    <div class="sheet-header">
+      <div class="sheet-title">New Entry</div>
+      <button class="close-btn" id="mobileCloseSheet">Close</button>
+    </div>
+    <div class="sheet-body">
+      <div><div class="label">User</div><div class="button-grid users" id="mobileUsersGrid"></div></div>
+      <div><div class="label">Objects</div><div class="button-grid" id="mobileObjectsGrid"></div></div>
+      <div><div class="label">Vehicles</div><div class="button-grid" id="mobileVehiclesGrid"></div></div>
+      <div class="field"><div class="label">From</div><input type="date" class="field-input" id="mobileFromDate"></div>
+      <div class="field"><div class="label">To</div><input type="date" class="field-input" id="mobileToDate"><div class="helper">After choosing From, To is automatically set to the same date.</div></div>
+      <div class="summary" id="mobileSummaryBox">Select a user, select one object or vehicle, and choose dates.</div>
+    </div>
+    <div class="sheet-footer"><button class="save-btn" id="mobileSaveBtn" disabled>Save</button></div>
+  </div>
+
+
+
+  <div class="day-sheet-backdrop" id="mobileDaySheetBackdrop">
+    <div class="day-sheet">
+      <div class="day-sheet-header">
+        <div class="day-sheet-title" id="mobileDaySheetTitle">Day entries</div>
+        <button type="button" class="close-btn" id="mobileDaySheetClose">Close</button>
+      </div>
+      <div class="day-sheet-list" id="mobileDaySheetList"></div>
+    </div>
+  </div>
+
+  <div class="mobile-confirm-backdrop" id="mobileDeleteModal">
+    <div class="confirm-card">
+      <div class="confirm-title">Delete entry?</div>
+      <div class="confirm-text" id="mobileDeleteText"></div>
+      <div class="confirm-actions">
+        <button class="desktop-btn" id="mobileDeleteCancel">Cancel</button>
+        <button class="desktop-btn danger" id="mobileDeleteConfirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbytMvOpUgHcPvfvnAvG4GpYjYxE5umgNXYDXG6aNYPiRePSmaU0WIb7Zca8m6VcOxBE6w/exec';
+const state={currentMonth:new Date(2026,3,1),selectedUser:null,selectedObject:null,selectedVehicle:null,note:'',entries:[],pendingDeleteId:null};
+const users=['Zemo','Kole','Dzole','Bratko'];
+const objects=[{name:'Skopje',color:'#22c55e'},{name:'Ohrid',color:'#3b82f6'},{name:'Mavrovo',color:'#f59e0b'},{name:'Greece',color:'#ef4444'},{name:'Croatia',color:'#8b5cf6'}];
+const vehicles=[{name:'Vito',color:'#14b8a6'},{name:'LT35',color:'#f97316'}];
+const weekdayNames=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MAX_VISIBLE_MOBILE_ENTRIES = 4;
+
+const desktopUsersList=document.getElementById('desktopUsersList');
+const desktopObjectsList=document.getElementById('desktopObjectsList');
+const desktopVehiclesList=document.getElementById('desktopVehiclesList');
+const desktopSelectedSummary=document.getElementById('desktopSelectedSummary');
+const desktopFromDate=document.getElementById('desktopFromDate');
+const desktopToDate=document.getElementById('desktopToDate');
+const desktopNote=document.getElementById('desktopNote');
+const desktopAddBtn=document.getElementById('desktopAddBtn');
+const desktopMonthLabel=document.getElementById('desktopMonthLabel');
+const desktopDayNames=document.getElementById('desktopDayNames');
+const desktopCalendarGrid=document.getElementById('desktopCalendarGrid');
+const desktopDeleteModal=document.getElementById('desktopDeleteModal');
+const desktopDeleteText=document.getElementById('desktopDeleteText');
+
+const mobileWeekdays=document.getElementById('mobileWeekdays');
+const mobileCalendar=document.getElementById('mobileCalendar');
+const mobileEntrySheet=document.getElementById('mobileEntrySheet');
+const mobileUsersGrid=document.getElementById('mobileUsersGrid');
+const mobileObjectsGrid=document.getElementById('mobileObjectsGrid');
+const mobileVehiclesGrid=document.getElementById('mobileVehiclesGrid');
+const mobileFromDate=document.getElementById('mobileFromDate');
+const mobileToDate=document.getElementById('mobileToDate');
+const mobileSummaryBox=document.getElementById('mobileSummaryBox');
+const mobileSaveBtn=document.getElementById('mobileSaveBtn');
+const mobileMonthLabel=document.getElementById('mobileMonthLabel');
+const mobileDeleteModal=document.getElementById('mobileDeleteModal');
+const mobileDeleteText=document.getElementById('mobileDeleteText');
+const mobileDaySheetBackdrop=document.getElementById('mobileDaySheetBackdrop');
+const mobileDaySheetTitle=document.getElementById('mobileDaySheetTitle');
+const mobileDaySheetList=document.getElementById('mobileDaySheetList');
+
+const mobileFab=document.getElementById('mobileFab');
+function openMobileEntrySheet(){
+  resetSharedForm();
+  renderAll();
+  mobileEntrySheet.classList.add('active');
+}
+mobileFab.addEventListener('click', openMobileEntrySheet);
+mobileFab.addEventListener('touchend', (e)=>{e.preventDefault(); openMobileEntrySheet();}, {passive:false});
+
+
+function detectPhone(){
+  const ua=navigator.userAgent||'';
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+}
+if(detectPhone()) document.body.classList.add('force-mobile');
+
+function formatDateLocal(date){
+  const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+function getUserIdByName(name){
+  const map={Zemo:'u1',Kole:'u2',Dzole:'u3',Bratko:'u4',Zoran:'u1',Nikola:'u2',Gjorgji:'u3'};
+  return map[name]||'';
+}
+function getUserNameById(id){
+  const map={u1:'Zemo',u2:'Kole',u3:'Dzole',u4:'Bratko'};
+  return map[id]||id;
+}
+function getObjectIdByName(name){
+  const map={Skopje:'o1',Ohrid:'o2',Mavrovo:'o3',Greece:'o4',Croatia:'o5'};
+  return map[name]||'';
+}
+function getVehicleIdByName(name){
+  const map={Vito:'v1',LT35:'v2'};
+  return map[name]||'';
+}
+function getItemId(type,name){
+  return type==='vehicle'?getVehicleIdByName(name):getObjectIdByName(name);
+}
+async function loadEntriesFromApi(){
+  try{
+    const res=await fetch(API_URL,{cache:'no-store'});
+    const rows=await res.json();
+    state.entries=(Array.isArray(rows)?rows:[]).filter(r=>r&&r.active!==false&&String(r.active).toUpperCase()!=='FALSE').map((r,idx)=>{
+      const type=(r.type||'').toLowerCase()==='vehicle'?'vehicle':'object';
+      const source=type==='vehicle'?vehicles:objects;
+      const item=source.find(x=>getItemId(type,x.name)===r.itemId);
+      return {
+        id:`${r.userId||''}_${r.itemId||''}_${r.from||''}_${r.to||''}_${idx}`,
+        user:getUserNameById(r.userId),
+        item:item?item.name:(r.itemId||''),
+        color:item?item.color:'#64748b',
+        from:r.from||'',
+        to:r.to||'',
+        note:r.note||'',
+        type
+      };
+    });
+    renderAll();
+  }catch(err){
+    console.error('Load failed:',err);
+  }
+}
+function getSelectedItem(){return state.selectedObject||state.selectedVehicle;}
+function resetSharedForm(){
+  const today=formatDateLocal(new Date());
+  state.selectedUser=null; state.selectedObject=null; state.selectedVehicle=null; state.note='';
+  desktopFromDate.value=today; desktopToDate.value=today; desktopNote.value='';
+  mobileFromDate.value=today; mobileToDate.value=today;
+}
+function changeMonth(delta){
+  state.currentMonth=new Date(state.currentMonth.getFullYear(),state.currentMonth.getMonth()+delta,1);
+  renderAll();
+}
+async function saveEntry(from,to,note=''){
+  const item=getSelectedItem();
+  if(!state.selectedUser||!item||!from||!to) return;
+  if(to<from){ alert('End date cannot be before start date.'); return; }
+
+  const payload={
+    action:'add',
+    userId:getUserIdByName(state.selectedUser),
+    type:state.selectedVehicle?'vehicle':'object',
+    itemId:state.selectedVehicle?getVehicleIdByName(item.name):getObjectIdByName(item.name),
+    from,
+    to,
+    note:note||state.note||''
+  };
+
+  try{
+    await fetch(API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    resetSharedForm();
+    closeMobileSheet();
+    await loadEntriesFromApi();
+  }catch(err){
+    console.error('Save failed:',err);
+    alert('Failed to save booking.');
+  }
+}
+async function deleteEntry(id){
+  const entry=findEntry(id);
+  if(!entry) return;
+  const type=entry.type||(getVehicleIdByName(entry.item)?'vehicle':'object');
+  const payload={
+    action:'delete',
+    userId:getUserIdByName(entry.user),
+    itemId:getItemId(type,entry.item),
+    from:entry.from,
+    to:entry.to
+  };
+
+  try{
+    await fetch(API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    state.pendingDeleteId=null;
+    closeDeleteModals();
+    await loadEntriesFromApi();
+  }catch(err){
+    console.error('Delete failed:',err);
+    alert('Failed to delete booking.');
+  }
+}
+function findEntry(id){ return state.entries.find(e=>e.id===id); }
+function entryText(entry){ return `${entry.user} · ${entry.item} (${entry.from} → ${entry.to})`; }
+function openDeleteConfirm(id){
+  state.pendingDeleteId=id;
+  const entry=findEntry(id);
+  if(!entry) return;
+  desktopDeleteText.textContent=entryText(entry);
+  mobileDeleteText.textContent=entryText(entry);
+  desktopDeleteModal.classList.add('open');
+  mobileDeleteModal.classList.add('open');
+}
+function closeDeleteModals(){
+  desktopDeleteModal.classList.remove('open');
+  mobileDeleteModal.classList.remove('open');
+}
+
+/* DESKTOP */
+function renderDesktopLists(){
+  desktopUsersList.innerHTML=users.map(u=>`<div class="item ${state.selectedUser===u?'active':''}" data-user="${u}"><span class="radio-dot"></span><div><div>${u}</div></div></div>`).join('');
+  desktopUsersList.querySelectorAll('.item').forEach(el=>el.onclick=()=>{state.selectedUser=el.dataset.user;renderAll();});
+
+  desktopObjectsList.innerHTML=objects.map(o=>`<div class="item ${state.selectedObject&&state.selectedObject.name===o.name?'active':''}" data-name="${o.name}"><span class="swatch" style="background:${o.color}"></span><div><div>${o.name}</div></div></div>`).join('');
+  desktopObjectsList.querySelectorAll('.item').forEach(el=>el.onclick=()=>{state.selectedObject=objects.find(x=>x.name===el.dataset.name);state.selectedVehicle=null;renderAll();});
+
+  desktopVehiclesList.innerHTML=vehicles.map(v=>`<div class="item ${state.selectedVehicle&&state.selectedVehicle.name===v.name?'active':''}" data-name="${v.name}"><span class="swatch" style="background:${v.color}"></span><div><div>${v.name}</div></div></div>`).join('');
+  desktopVehiclesList.querySelectorAll('.item').forEach(el=>el.onclick=()=>{state.selectedVehicle=vehicles.find(x=>x.name===el.dataset.name);state.selectedObject=null;renderAll();});
+}
+function renderDesktopSummary(){
+  const user=state.selectedUser, item=getSelectedItem();
+  const html=(user?`<span class="selection-pill">${user}</span>`:'')+(item?`<span class="selection-pill"><span class="swatch" style="background:${item.color}"></span>${item.name}</span>`:'');
+  desktopSelectedSummary.innerHTML=html||'Select 1 user and 1 object or vehicle.';
+  desktopAddBtn.disabled=!(user&&item&&desktopFromDate.value&&desktopToDate.value);
+}
+function renderDesktopCalendar(){
+  desktopMonthLabel.textContent=state.currentMonth.toLocaleString('en-US',{month:'long',year:'numeric'});
+  desktopDayNames.innerHTML=weekdayNames.map(d=>`<div class="day-name">${d}</div>`).join('');
+  desktopCalendarGrid.innerHTML='';
+
+  const year=state.currentMonth.getFullYear();
+  const month=state.currentMonth.getMonth();
+  const first=new Date(year,month,1);
+  let startWeekday=first.getDay(); startWeekday=startWeekday===0?7:startWeekday;
+  const daysBefore=startWeekday-1;
+  const firstGridDay=new Date(year,month,1-daysBefore);
+
+  for(let i=0;i<42;i++){
+    const date=new Date(firstGridDay);
+    date.setDate(firstGridDay.getDate()+i);
+    const key=formatDateLocal(date);
+
+    const dayEl=document.createElement('div');
+    dayEl.className='day'+(date.getMonth()!==month?' muted':'');
+
+    const dayNum=document.createElement('div');
+    dayNum.className='day-num';
+    dayNum.textContent=date.getDate();
+
+    const content=document.createElement('div');
+    content.className='desktop-day-content';
+
+    state.entries.filter(e=>key>=e.from&&key<=e.to).forEach(e=>{
+      const entry=document.createElement('div');
+      entry.className='event';
+      entry.style.background=e.color;
+      entry.style.borderColor=e.color;
+      entry.textContent=`${e.user} · ${e.item}`;
+      entry.onclick=()=>openDeleteConfirm(e.id);
+      content.appendChild(entry);
+    });
+
+    dayEl.appendChild(dayNum);
+    dayEl.appendChild(content);
+    desktopCalendarGrid.appendChild(dayEl);
+  }
+}
+
+/* MOBILE */
+function renderMobileWeekdays(){
+  mobileWeekdays.innerHTML='';
+  weekdayNames.forEach(d=>{
+    const el=document.createElement('div');
+    el.className='weekday';
+    el.textContent=d;
+    mobileWeekdays.appendChild(el);
+  });
+}
+function renderMobileSelectors(){
+  mobileUsersGrid.innerHTML='';
+  users.forEach(user=>{
+    const btn=document.createElement('button');
+    btn.className='select-btn'+(state.selectedUser===user?' active':'');
+    btn.textContent=user;
+    btn.onclick=()=>{state.selectedUser=user;renderAll();};
+    mobileUsersGrid.appendChild(btn);
+  });
+
+  mobileObjectsGrid.innerHTML='';
+  objects.forEach(item=>{
+    const btn=document.createElement('button');
+    btn.className='select-btn item-btn'+(state.selectedObject&&state.selectedObject.name===item.name?' active':'');
+    btn.textContent=item.name;
+    btn.style.background=item.color;
+    btn.onclick=()=>{state.selectedObject=item;state.selectedVehicle=null;renderAll();};
+    mobileObjectsGrid.appendChild(btn);
+  });
+
+  mobileVehiclesGrid.innerHTML='';
+  vehicles.forEach(item=>{
+    const btn=document.createElement('button');
+    btn.className='select-btn item-btn'+(state.selectedVehicle&&state.selectedVehicle.name===item.name?' active':'');
+    btn.textContent=item.name;
+    btn.style.background=item.color;
+    btn.onclick=()=>{state.selectedVehicle=item;state.selectedObject=null;renderAll();};
+    mobileVehiclesGrid.appendChild(btn);
+  });
+}
+function renderMobileSummary(){
+  const item=getSelectedItem(), from=mobileFromDate.value, to=mobileToDate.value;
+  const ok=!!(state.selectedUser&&item&&from&&to);
+  mobileSummaryBox.innerHTML=`<strong>User:</strong> ${state.selectedUser||'-'}<br><strong>Item:</strong> ${item?item.name:'-'}<br><strong>From:</strong> ${from||'-'}<br><strong>To:</strong> ${to||'-'}`;
+  mobileSaveBtn.classList.toggle('enabled',ok);
+  mobileSaveBtn.disabled=!ok;
+}
+function renderMobileCalendar(){
+  mobileMonthLabel.textContent=state.currentMonth.toLocaleString('en-US',{month:'long',year:'numeric'});
+  mobileCalendar.innerHTML='';
+
+  const year=state.currentMonth.getFullYear();
+  const month=state.currentMonth.getMonth();
+  const first=new Date(year,month,1);
+  let startWeekday=first.getDay(); startWeekday=startWeekday===0?7:startWeekday;
+  const daysBefore=startWeekday-1;
+  const firstGridDay=new Date(year,month,1-daysBefore);
+
+  for(let i=0;i<42;i++){
+    const date=new Date(firstGridDay);
+    date.setDate(firstGridDay.getDate()+i);
+    const key=formatDateLocal(date);
+
+    const day=document.createElement('div');
+    day.className='mobile-day'+(date.getMonth()!==month?' muted':'');
+
+    const num=document.createElement('div');
+    num.className='mobile-day-num';
+    num.textContent=date.getDate();
+
+    const entriesWrap=document.createElement('div');
+    entriesWrap.className='entries';
+
+    const dayEntries=state.entries.filter(e=>key>=e.from&&key<=e.to);
+    dayEntries.slice(0,MAX_VISIBLE_MOBILE_ENTRIES).forEach(e=>{
+      const entry=document.createElement('div');
+      entry.className='mobile-entry';
+      entry.style.background=e.color;
+      entry.innerHTML=`<div class="entry-user">${e.user}</div><div class="entry-item">${e.item}</div>`;
+      entry.onclick=(ev)=>{ev.stopPropagation();openDeleteConfirm(e.id);};
+      entriesWrap.appendChild(entry);
+    });
+    if(dayEntries.length>MAX_VISIBLE_MOBILE_ENTRIES){
+      const more=document.createElement('button');
+      more.type='button';
+      more.className='more-badge';
+      more.textContent=`+${dayEntries.length-MAX_VISIBLE_MOBILE_ENTRIES} more`;
+      more.onclick=(ev)=>{ev.stopPropagation();openMobileDaySheet(key);};
+      entriesWrap.appendChild(more);
+    }
+
+    day.onclick=()=>openMobileDaySheet(key);
+    day.appendChild(num);
+    day.appendChild(entriesWrap);
+    mobileCalendar.appendChild(day);
+  }
+}
+function openMobileDaySheet(dateKey){
+  const list=state.entries.filter(e=>dateKey>=e.from&&dateKey<=e.to);
+  mobileDaySheetTitle.textContent=new Date(dateKey+'T00:00:00').toLocaleDateString('en-US',{weekday:'short', day:'numeric', month:'long', year:'numeric'});
+  if(!list.length){
+    mobileDaySheetList.innerHTML='<div class="summary">No entries for this day.</div>';
+  } else {
+    mobileDaySheetList.innerHTML='';
+    list.forEach(e=>{
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.className='day-sheet-entry';
+      btn.style.background=e.color;
+      btn.innerHTML=`${e.user}<div style="font-size:12px;font-weight:600;opacity:.96;margin-top:4px">${e.item} · tap to delete</div>`;
+      btn.onclick=()=>openDeleteConfirm(e.id);
+      mobileDaySheetList.appendChild(btn);
+    });
+  }
+  mobileDaySheetBackdrop.classList.add('open');
+}
+function closeMobileDaySheet(){ mobileDaySheetBackdrop.classList.remove('open'); }
+function closeMobileSheet(){ mobileEntrySheet.classList.remove('active'); }
+function renderAll(){
+  renderDesktopLists();
+  renderDesktopSummary();
+  renderDesktopCalendar();
+  renderMobileWeekdays();
+  renderMobileSelectors();
+  renderMobileSummary();
+  renderMobileCalendar();
+}
+
+document.getElementById('desktopPrevMonth').onclick=()=>changeMonth(-1);
+document.getElementById('desktopNextMonth').onclick=()=>changeMonth(1);
+document.getElementById('mobilePrevMonth').onclick=()=>changeMonth(-1);
+document.getElementById('mobileNextMonth').onclick=()=>changeMonth(1);
+
+document.getElementById('mobileCloseSheet').onclick=closeMobileSheet;
+document.getElementById('mobileDaySheetClose').onclick=closeMobileDaySheet;
+mobileDaySheetBackdrop.onclick=(e)=>{if(e.target===mobileDaySheetBackdrop) closeMobileDaySheet();};
+
+desktopFromDate.onchange=()=>{if(!desktopToDate.value||desktopToDate.value<desktopFromDate.value) desktopToDate.value=desktopFromDate.value; renderAll();};
+desktopToDate.onchange=renderAll;
+desktopNote.oninput=e=>{state.note=e.target.value||'';};
+
+mobileFromDate.onchange=()=>{if(!mobileToDate.value||mobileToDate.value<mobileFromDate.value) mobileToDate.value=mobileFromDate.value; renderAll();};
+mobileToDate.onchange=renderAll;
+
+desktopAddBtn.onclick=()=>saveEntry(desktopFromDate.value,desktopToDate.value,desktopNote.value||'');
+mobileSaveBtn.onclick=()=>saveEntry(mobileFromDate.value,mobileToDate.value);
+
+document.getElementById('desktopDeleteCancel').onclick=closeDeleteModals;
+document.getElementById('mobileDeleteCancel').onclick=closeDeleteModals;
+document.getElementById('desktopDeleteConfirm').onclick=()=>{if(state.pendingDeleteId!=null) deleteEntry(state.pendingDeleteId);};
+document.getElementById('mobileDeleteConfirm').onclick=()=>{if(state.pendingDeleteId!=null) deleteEntry(state.pendingDeleteId);};
+
+resetSharedForm();
+renderAll();
+loadEntriesFromApi();
+</script>
+</body>
+</html>

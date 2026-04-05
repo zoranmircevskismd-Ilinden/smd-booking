@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="SMD Booking">
+  <rect width="512" height="512" rx="108" fill="#0b3d2e"/>
+  <rect x="24" y="24" width="464" height="464" rx="92" fill="none" stroke="#ffffff" stroke-opacity="0.10" stroke-width="8"/>
+  <text x="256" y="225" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="150" font-weight="700" fill="#ffffff">SMD</text>
+  <text x="256" y="340" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="700" lengthAdjust="spacingAndGlyphs" textLength="300" fill="#ffffff">BOOKING</text>
+</svg>
